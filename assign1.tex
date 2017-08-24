@@ -1,0 +1,437 @@
+\documentclass[11pt]{article}
+
+\usepackage{pstricks,pst-node,amsmath,algorithm}
+\usepackage[noend]{algpseudocode}
+
+\pagestyle{empty}
+\textwidth	165mm
+\textheight	248mm
+\topmargin	-13mm
+\oddsidemargin	-2mm
+\evensidemargin	-2mm
+
+
+\newcommand{\id}[1]{\mbox{\textit{#1}}}
+\newcommand{\tuple}[1]{\langle #1 \rangle}
+
+% For use in graphs in pspicture environment
+% \Gnode{x}{y}{name}{label}
+\newcommand{\Gnode}[4]{\Cnode(#1,#2){#3}\rput(#1,#2){#4}}
+\newcommand{\Hnode}[3]{\Cnode(#1,#2){#3}\rput(#1,#2){~}}
+\algnewcommand{\AND}{\,\textbf{and}\,}
+\algnewcommand{\TRUE}{\,\texttt{true}\,}
+\algnewcommand{\FALSE}{\,\texttt{false}\,}
+\begin{document}
+
+\begin{center}
+{\sc The University of Melbourne
+\\
+School of Computing and Information Systems
+\\
+COMP90038 Algorithms and Complexity}
+\bigskip \\
+{\Large\bf Assignment 1, Semester 2, 2017}
+\bigskip \\
+{\large Released: 9 August.  Deadline: 31 August at 23:00}
+\bigskip\\
+Tiancong Li
+\end{center}
+
+\begin{enumerate}
+\item
+Consider the recurrence relation $T(n) = 2 T(n/2) + 1$, with $T(1) = 1$.
+\begin{enumerate}
+\item
+Use the Master Theorem to find a correct $\Theta$ expression for $T(n)$.
+\\
+\textsc{answer}:
+\par
+As the Master Theorem described, for a recurrence relation
+$T(n)=a\;T\!\left({\frac {n}{b}}\right)+f(n)$,
+\\when $f(n)=O(n^{c})$ and $c<c_{crit}$ where $c_{crit}=log_ba$,
+\\we have: $T(n)=\Theta(n^{c_{crit}})$.
+\par
+So, for the specific relation $T(n)=2T(n/2)+1$,
+\\
+we have: $c_{crit}=log_ba=1$ and $f(n)=1$.
+\\
+Let $c=0$,
+\\then we have: $f(n)=O(n^c)=O(1)$ and $0=c<c_{crit}=1$.
+\\
+So, we have: $T(n)=\Theta(n^{c_{crit}})=\Theta(n)$.
+
+
+\item
+Use telescoping to give an exact closed-form definition of $T(n)$.
+\\
+\textsc{answer}:
+\par
+Let $n=2^k$ and $S(k)=T(2^k)$,
+\\so we have: $T(2^k)=2T(2^{k-1})+1$,
+\\and so: $S(k)=2S(k-1)+1$.
+\\Multiply both sides by $2^{-k}$,
+\\so we have: $2^{-k}S(k)=2^{-(k-1)}+2^{-k}$.
+\\Let $U(k)=2^{-k}S(k)$,
+\\so we have: $U(k)=U(k-1)+2^{-k}$.
+\\This telesopes yielding: $U(k)=U(0)+1-2^{-k}$,
+\\where $U(0)=S(0)=T(1)=1$,
+\\so we have: $U(k)=2-2^{-k}$,
+\\and so: $2^{-k}S(k)=2-2{-k}$,
+\\and so: $T(2^k)=2^(k+1)-1$.
+\\Since $k=logn$,
+\\so we have: $T(n)=2^{logn}*2-1=2n-1$.
+
+
+\item
+Suppose somebody presents you with the following argument, to show
+that $T(n) \not\in \Theta(n)$.
+\begin{quote}
+If we had $T(n) \in \Theta(n)$ then $T(n) \leq k \cdot n$ for some constant $k$.
+But, substituting into the recurrence relation, we get
+$2 \cdot k \cdot n/2 + 1 \leq k \cdot n$.
+And that in turn is clearly false for all $k$.
+Hence we must have $T(n) \not\in \Theta(n)$.
+\end{quote}
+Do you agree with this argument?
+Why or why not?
+\\
+\textsc{answer}:
+\par
+Disagree.
+\\If $T(n)\in\Theta(n)$,
+\\Then we have: $T(n) \leq k \cdot n$,
+\\and so: $T(n/2) \leq k \cdot n/2$.
+\\So we have: $T(n)=2T(n/2)+1 \leq 2 \cdot k \cdot n/2 + 1$.
+\\So there is no way to get $2 \cdot k \cdot n/2 + 1 \leq k \cdot n$
+\\from $T(n) \leq k \cdot n$ and $T(n)\leq 2 \cdot k \cdot n/2 + 1$.
+\end{enumerate}
+
+\item
+DNA nucleobases are
+\texttt{A} (adenine),
+\texttt{C} (cytosine),
+\texttt{G} (guanine) and
+\texttt{T} (thymine).
+Consider the problem of counting, in a DNA string $s$,
+the number of sequences (substrings)
+that start with an \verb!A! and end with a \verb!C!.
+For example, there are four such sequences in \verb!TACAAGCGA!.
+\begin{enumerate}
+\item
+Using pseudo-code, give a brute-force algorithm to solve this problem.
+\\
+\textsc{answer}:
+\par
+\begin{algorithmic}
+\Function{counting}{$s,n,start,end$}\Comment{count substrings in s with size n}
+\State $count\gets 0$
+\For{$i\gets0,n-2$}
+  \If{$s[i]=start$}
+    \For{$j\gets i+1,n-1$}
+      \If{$s[j]=end$}
+        \State $count\gets scount+1$
+      \EndIf
+    \EndFor
+  \EndIf
+\EndFor
+\Return $count$
+\EndFunction
+\end{algorithmic}
+\item
+Design a method that solves the problem with a single left-to-right
+scan of the string $s$ and present it using pseudo-code.
+Briefly explain why the complexity is linear in $|s|$.
+\\
+\textsc{answer}:
+\par
+\begin{algorithmic}
+\Function{counting}{$s,n,start,end$}
+\State $count \gets 0$
+\State $countStart \gets 0$
+\For{$i \gets 0,n-1$}
+  \If{$s[i]=start$}
+    \State $countStart \gets countStart + 1$
+  \ElsIf{$s[i]=end$}
+    \State $count \gets count + countStart$
+  \EndIf
+\EndFor
+\Return $count$
+\EndFunction
+\end{algorithmic}
+By counting the number of the starting character, we can get the total count of
+substrings by adding current $countStart$ to the total $count$ everytime
+when an ending character is found, and this process only scans the string one time.
+So, the complexity is linear in $|s|$
+\end{enumerate}
+
+\item
+Given two nodes $v$ and $u$ in a connected, undirected graph
+$G = \tuple{V,E}$,
+their \emph{distance} is the length of the shortest path between
+$v$ and $u$ (here each edge is of length 1).
+The \emph{remoteness} of a node is its distance to the node furthest away,
+that is, $\id{rem}(v) = \max \{\id{dist}(v,u) \mid u \in V\}$.
+A \emph{hub} in $G$ is a node which has minimal
+remoteness, compared to all other nodes.
+That is, $v$ is a hub iff
+$\id{rem}(v) = \min \{\id{rem}(u) \mid u \in V\}$.
+For example, $b$ is a hub in the graph on the left (below),
+whereas $b$, $d$ and $e$ all are hubs in the graph on the right.
+Note that a connected graph always has at least one hub.
+
+\begin{center}
+\begin{pspicture}(0,-0.2)(6,1.3)
+\psset{nodesep=1pt,linecolor=black,arrows=-}
+
+\Gnode{0}{1}{A}{$a$}
+\Gnode{1}{1}{B}{$b$}
+\Gnode{2}{1}{C}{$c$}
+\Gnode{0}{0}{D}{$d$}
+\Gnode{1}{0}{E}{$e$}
+\Gnode{2}{0}{F}{$f$}
+
+\Gnode{4}{1}{A1}{$a$}
+\Gnode{5}{1}{B1}{$b$}
+\Gnode{6}{1}{C1}{$c$}
+\Gnode{4}{0}{D1}{$d$}
+\Gnode{5}{0}{E1}{$e$}
+\Gnode{6}{0}{F1}{$f$}
+
+\ncline{A}{B}
+\ncline{A}{D}
+\ncline{B}{C}
+\ncline{B}{D}
+\ncline{B}{E}
+\ncline{B}{F}
+\ncline{D}{E}
+
+\ncline{A1}{B1}
+\ncline{A1}{D1}
+\ncline{B1}{C1}
+\ncline{B1}{D1}
+\ncline{B1}{E1}
+\ncline{D1}{E1}
+\ncline{E1}{F1}
+
+\end{pspicture}
+\end{center}
+\begin{enumerate}
+\item
+Using pseudo-code,
+design a function that, given a connected undirected graph $\tuple{V,E}$
+and a node $v \in V$, determines all distances from $v$, that is,
+for each $u \in V$, gives $\id{dist}(v,u)$.
+Assume that nodes are labelled 1 to $n$, so that your function
+can return an array $\id{dist}$ with $\id{dist}[i]$ giving
+$i$'s distance to $v$.
+The algorithm should run in time that is linear in the size of the graph.
+\\
+\textsc{answer}:
+\par
+\begin{algorithmic}
+\Function{getDistances}{$\tuple{V,E}, v, n$}
+\State $initArray(dist, n)$\Comment{create an all zero array}
+\State $initQueue(queue)$\Comment{create an empty queue}
+\State $inject(queue,v)$
+\While{$queue$ is non-empty}
+  \State $u \gets eject(queue)$
+  \For{each edge$(u, w)$}
+    \If{$dist[w]=0 \AND w \neq v$}
+      \State $dist[w] \gets dist[u] + 1$
+      \State $inject(queue, w)$
+    \EndIf
+  \EndFor
+\EndWhile
+\Return $dist$
+\EndFunction
+\end{algorithmic}
+Use BFS to scan the graph starting from $v$,
+never go back to any nodes already discovered.
+So, after one single scan, the shortest distance could be found.
+
+\item
+Design an algorithm that, given a connected undirected graph $\tuple{V,E}$,
+identifies a hub (any hub) in the graph.
+More precisely, use pseudo-code to define a function \textsc{Hub}
+that takes $\tuple{V,E}$ as input and returns a node which is a hub.
+Aim for an $O(n^2)$ algorithm, where $n$ is the size of the graph.
+\\
+\textsc{answer}:
+\par
+\begin{algorithmic}
+\Function{getHub}{$\tuple{V,E}, n$}
+\State $initArray(remotes, n)$\Comment{create an all zero array}
+\For{each $v$ in $V$}
+  \State $dist=\Call{getDistances}{\tuple{V,E}, v, n}$
+  \State $remotes[v]=\Call{maxDistance}{dist, n}$
+\EndFor
+\Return $\Call{minRemoteNode}{remotes, n}$
+\EndFunction
+
+\Function{maxDistance}{$dist, n$}
+\State $max \gets 0$
+\For{$i \gets 1,n$}
+  \If{$dist[i]>max$}
+    \State $max=dist[i]$
+  \EndIf
+\EndFor
+\Return $max$
+\EndFunction
+
+\Function{minRemoteNode}{$remotes, n$}
+\State $min \gets remotes[1]$
+\State $node = 1$
+\For{$i \gets 2,n$}
+  \If{$remotes[i]<min$}
+    \State $min \gets remotes[i]$
+    \State $node \gets i$
+  \EndIf
+\EndFor
+\Return $node$
+\EndFunction
+\end{algorithmic}
+Get the HUB by its definition.
+Since $getDistance$ and $maxDistance$ are both $O(n)$,
+after traverse each $v$, the complexity is $O(n^2)$.
+\end{enumerate}
+
+\item
+Let $\tuple{V,E}$ be a directed graph.
+A node $v \in V$ is an \emph{attractor} iff $v$ is a sink, and
+moreover, for every node $u \in V$ with $u \not= v$, $(u,v) \in E$.
+Note that a graph can have at most one attractor.
+We want an algorithm that will identify an attractor in an
+input graph $\tuple{V,E}$ if there is one.
+Assume that a graph is represented as an adjacency matrix $A$,
+with the nodes in $V$ labelled 1 to $n$.
+The function $\textsc{Attractor}(A[.,.],n)$ should return $i$ if
+node $i$ is an attractor, and 0 if the graph has no attractor.
+\begin{enumerate}
+\item
+Give an $O(n^2)$ algorithm for the problem, using pseudo-code.
+\\
+\textsc{answer}:
+\par
+\begin{algorithmic}
+\Function{attractor}{$A,n$}
+\State $attractor \gets 0$
+\State $initArray(mark, n)$\Comment{create an all zero array}
+\State $initArray(attract, n)$\Comment{create an all zero array}
+\State $initQueue(queue)$\Comment{create an empty queue}
+\For{$i \gets 1,n$}
+  \If{$mark[i]=0$}
+    \State $inject(queue, i)$
+    \State $mark[i] \gets 1$
+    \While{$queue$ is non-empty}
+      \State $u \gets eject(queue)$
+      \For{$j \gets 1, n$}
+        \If{$A[u][j]=1$}
+          \State $attract[u] \gets attract[u]-1$
+          \State $attract[j] \gets attract[j]+1$
+          \If{$mark[j] = 0$}
+            \State $inject(queue,j)$
+            \State $mark[j] \gets 1$
+          \EndIf
+        \EndIf
+      \EndFor
+    \EndWhile
+  \EndIf
+\EndFor
+\For{$i \gets 1,n$}
+  \If{$attract[i]=n-1$}
+    \State $attractor \gets i$
+  \EndIf
+\EndFor
+\If{$A[attractor][attractor]=1$}\Comment{attractor cannot be self connected}
+  \State $attractor \gets 0$
+\EndIf
+\Return $attractor$
+\EndFunction
+\end{algorithmic}
+By using an $attract$ array, for every node in the graph,
+when an outgoing edge is found, $-1$ is added to the corresponding bit,
+and when an incoming edge is found, $1$ is added.
+So, the $attractor$ is the one which hold the value of $n-1$ at the end.
+The algorithm uses BFS, and its complexity is $O(n^2)$
+
+\item
+(Harder.)
+Give an $O(n)$ algorithm for the problem, using pseudo-code.
+Maximum marks will (only) be given for a solution that is both
+readable, intelligible, carefully explained and analysed,
+and, importantly, runs in linear time.
+\\
+\textsc{answer}:
+\par
+\begin{algorithmic}
+\Function{attractor}{$A,n$}
+\State $attractor \gets 0$
+\State $i \gets 1$
+\State $j \gets 1$
+\While{$i \leq n \AND j \leq n$}
+  \If{$A[i][j]=1$}
+    \State $i \gets i+1$
+  \Else
+    \State $j \gets j+1$
+  \EndIf
+\EndWhile
+\If{$i \leq n \And \Call{isAttractor}{A,i,n}$}
+  \State $attractor \gets i$
+\EndIf
+\Return $attractor$
+\EndFunction
+
+\Function{isAttractor}{$A,i,n$}
+\For{$j \gets 1,n$}
+  \If{$A[i][j]=1$}
+    \Return $\FALSE$
+  \EndIf
+  \If{$A[j][i]=0 \AND i \neq j$}
+    \Return $\FALSE$
+  \EndIf
+\EndFor
+\Return $\TRUE$
+\EndFunction
+\end{algorithmic}
+This algorithm uses "decrease and conquer" principle.
+We change the problem of finding the attractor of graph with size of $n$
+to the problem that prune $n-1$ vertices which are not attractor
+and check whether the remaining one is an attractor.
+\\
+As shown below, if the 2nd vertice is the attractor,
+the matrix should looks like this,
+according to the definition of attractor.
+And when we arrive the end along with the path described in the above algorithm,
+every vertice except the 2nd one could be pruned,
+\\since:
+if $A[i][2] = 1, i \neq 2$, then $i$ could not be the attractor.
+Likewise, if $A[2][i] = 0, i \neq 2$, then $i$ could not be the attractor.
+To be more detailed, an attractor $i$ must satisfy that $A[i][j] = 0$,
+for every node $j \in V$ and $A[j][i] = 1$, for every $j \in V$ with $i \neq j$
+
+So, after the check for the 2nd node, we could know whether there is an attractor,
+which is the 2nd vertice here, or not.
+
+There are at most $2n$ operations for pruning, and $n$ operations for checking,
+so the complexity is $O(n)$.
+\begin{equation*}
+\begin{pmatrix}
+      a_{11} & 1 & a_{13}& \dots & a_{1n}\\
+      0 & 0 & 0&\dots & 0\\
+      a_{31} & 1 &a_{33}& \dots & a_{3n}\\
+      \hdotsfor{4}\\
+      a_{n1} & 1 &a_{n3}& \dots & a_{nn}
+\end{pmatrix}
+\end{equation*}
+\end{enumerate}
+
+\end{enumerate}
+
+
+
+\begin{flushright}
+Tiancong Li
+\\ 24 August 2017
+\end{flushright}
+
+\end{document}
