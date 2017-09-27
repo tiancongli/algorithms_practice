@@ -1,0 +1,696 @@
+\documentclass[11pt]{article}
+
+\usepackage{pstricks,pst-node,pst-tree}
+\usepackage[noend]{algpseudocode}
+
+\pagestyle{empty}
+\textwidth	165mm
+\textheight	252mm
+\topmargin	-13mm
+\oddsidemargin	-2mm
+\evensidemargin	-2mm
+\renewcommand{\baselinestretch}{1.03}
+
+\newcommand{\id}[1]{\mbox{\textit{#1}}}
+\newcommand{\tuple}[1]{\langle #1 \rangle}
+
+\algnewcommand{\AND}{\,\textbf{and}\,}
+\algnewcommand{\NOT}{\,\textbf{not}\,}
+\algnewcommand{\OR}{\,\textbf{or}\,}
+\algnewcommand{\TRUE}{\,\texttt{true}\,}
+\algnewcommand{\FALSE}{\,\texttt{false}\,}
+\MakeRobust{\Call}
+\begin{document}
+
+\begin{center}
+{\sc The University of Melbourne
+\\
+School of Computing and Information Systems
+\\
+COMP90038 Algorithms and Complexity}
+\bigskip \\
+{\Large\bf Assignment 2, Semester 2, 2017}
+\bigskip \\
+{\large Released: 23 September.  Deadline: 13 October at 23:00}
+\end{center}
+
+\section*{Objectives}
+
+To improve your understanding of data structures and algorithms for
+sorting and search.
+To consolidate your knowledge of trees and tree-based algorithms.
+To develop problem-solving and design skills.
+To develop skills in analysis and formal reasoning about
+complex concepts.
+To improve written communication skills; in particular the
+ability to use pseudo-code and present algorithms clearly,
+precisely and unambiguously.
+
+\section*{Five Challenges}
+
+\subsection*{Challenge 1 \hfill {\small (1 mark)}}
+
+Draw a valid AVL tree of height 5, consisting of the 20 integers
+from 1 to 20 (no repeats).
+Note that a tree of height 5 has some root-to-leaf path with
+\emph{six} nodes along it.
+\\
+\textsc{answer}
+\begin{center}
+\pstree[nodesep=2pt,levelsep=25pt]{\TR{13}}{
+  \pstree[nodesep=2pt,levelsep=25pt]{\TR{8}}{
+    \pstree{\TR{5}}{
+      \pstree{\TR{3}}{
+        \pstree{\TR{2}}{
+          \TR{1}
+        }
+        \TR{4}
+      }
+      \pstree{\TR{7}}{
+        \TR{6}
+      }
+    }
+    \pstree{\TR{11}}{
+      \pstree{\TR{10}}{
+        \TR{9}
+      }
+      \TR{12}
+    }
+  }
+  \pstree[nodesep=2pt,levelsep=25pt]{\TR{18}}{
+    \pstree{\TR{16}}{
+      \pstree{\TR{15}}{
+        \TR{14}
+      }
+      \TR{17}
+    }
+    \pstree{\TR{20}}{
+      \TR{19}
+    }
+  }
+}
+\end{center}
+For a AVL tree which contains 20 integers, it has the minimum height of 4
+when it is a complete binary tree. To find the maxium height,
+we try to find the minimum nodes number given a specific height.
+So, if $n(h)$ means the minimum nodes number of height h, then
+$$n(h) = n(h-1) + n(h-2) + 1$$
+since we want to find the minimum nodes, so we want the heights of subtrees
+are as small as possible.
+Then we can find $n(5) = 20$, which means, to achieve height of 5,
+we need 20 nodes at least.
+So, 5 is the maxium height of 20 nodes AVL tree.
+To construct the tree, we obey the rule $n(h) = n(h-1) + n(h-2) + 1$,
+and after we get the structure,
+we could use inorder traverse to fit the integers into the structure.
+\pagebreak
+
+\subsection*{Challenge 2 \hfill {\small (2 marks)}}
+
+Snarkbusters Inc.\ produces and deploys snark detectors,
+to be used on building facades.
+These are very expensive devices.
+One of the company's workers dropped a snark detector while working on the
+16th floor of a building in Melbourne's CBD, and the device broke when it
+hit the ground, in spite of having a reputation as indestructible.
+The company now wants to know how tough their snark detector really is.
+They have hired a consultant, Dr.\ Eva Luator, to determine the
+largest floor level from which a snark detector can be dropped
+without breaking.
+That is, they want the number $n$ such that dropping a snark detector
+from level $n$ is safe (it does not break), but dropping it from
+level $n+1$ is unsafe (it will break).
+They call that number $n$ the ``safe limit''.
+They know that there is no problem when the device is dropped from ground
+level, that is, they know that $0 < n < 16$.
+
+Since there are 15 floor levels to test, Dr.\ Luator asks for a
+handful of snark detectors to use in the experiment.
+Once a snark detector is broken it cannot be used again in the test.
+But the company will not give her that many.
+They argue that one is enough, because Dr.\ Luator can just drop it from
+level 1, and then, if it did not break, drop it from level 2, and so on.
+That process will identify the safe limit.
+Dr.\ Luator protests: that could make the testing too time consuming
+(and expensive) because, in the worst case, she would need to perform
+15 experiments (drops).
+As a compromise, it is decided that Dr.\ Luator can have two snark
+detectors to use in her testing.
+
+Eva Luator wants to make the most of the two snark detectors.
+She wants to minimise the number $d$ of experiments (drops) that she
+needs to do, \emph{in the worst case}, to determine the safe limit.
+What is that number $d$, and what is the testing strategy that achieves it?
+\\
+\textsc{answer}
+\par
+
+$d = 5$
+
+To solve this problem, we could construct a model, which contains the ordered
+integers
+from 1 to 15, and a given float m,
+and our goal is to fit m into the ordered intergers,
+but we only have two chance to compare m with a bigger integer.
+
+The most straightfoward idea is that we use binary search,
+and once meet the bigger integer,
+then we do a linear search on the small part from the lowest integer to the highest integer.
+
+However, this will cost 8 comparisons in the worst case.
+The optimization is to balance the iterations of linear search and binary search.
+To achieve that, we construct a binary search tree shown as below.
+The tree is optimized since the number of nodes in the left subtree is equal to
+the height of right subtree, which give a minimum time of comparisons, 5.
+\begin{center}
+\pstree[nodesep=2pt,levelsep=25pt]{\TR{5}}{
+  \pstree[nodesep=2pt,levelsep=25pt]{\TR{3}}{
+    \pstree{\TR{2}}{
+      \TR{1}
+    }
+    \TR{4}
+  }
+  \pstree[nodesep=2pt,levelsep=25pt]{\TR{9}}{
+    \pstree{\TR{7}}{
+      \TR{6}
+      \TR{8}
+    }
+    \pstree{\TR{12}}{
+      \pstree{\TR{11}}{
+        \TR{10}
+      }
+      \pstree{\TR{14}}{
+        \TR{13}
+        \TR{15}
+      }
+    }
+  }
+}
+\end{center}
+
+
+\pagebreak
+\subsection*{Challenge 3 \hfill {\small (3 marks)}}
+
+Consider the following problem.
+We are given two arrays, $A[1]..A[n]$ and $B[1]..B[n]$,
+each holding positive integer keys (possibly with duplicates).
+The arrays are of the same size, and each is sorted.
+We are also given a positive integer $s$, and we want to find a
+pair $(i,j)$ of indices such that $A[i] + B[j] = s$.
+If several such pairs exist, we do not care which is produced---any
+such pair will do.
+If no such pair exists then we want that indicated,
+in the form of $(0,0)$, a non-valid pair of indices, being returned.
+Using neat, clean pseudo-code, write three different functions to
+solve the problem:
+\begin{enumerate}
+\setlength{\itemsep}{-0.4ex}
+\item
+A brute-force function $\textsc{F1}(A[\cdot],B[\cdot],n,s)$.
+The worst-case running time of \textsc{F1} should be $\Theta(n^2)$.
+Make \textsc{F1} as simple and neat as you can.
+\\
+\textsc{answer}
+\par
+\begin{algorithmic}
+\Function{F1}{$A[\cdot],B[\cdot],n,s$}
+\For{$i \gets 1,n$}
+  \For{$j \gets 1, n$}
+    \If{$A[i]+B[j]=s$}
+      \State \Return $(i, j)$
+    \EndIf
+  \EndFor
+\EndFor
+\State \Return $(0, 0)$
+\EndFunction
+\end{algorithmic}
+\item
+A function
+$\textsc{F2}(A[\cdot],B[\cdot],n,s)$.
+The worst-case running time of \textsc{F2} should be $\Theta(n \log n)$.
+Make \textsc{F2} as simple and neat as you can.
+\\
+\textsc{answer}
+\par
+\begin{algorithmic}
+  \Function{F2}{$A[\cdot],B[\cdot],n,s$}
+    \For{$i \gets 1,n$}
+      \State $low \gets 1$
+      \State $high \gets n$
+    \While{$low < high$}
+      \State $m \gets floor((high - low)/2) + low$
+      \If{$A[i]+B[m]=s$}
+        \State \Return $(i, m)$
+      \ElsIf{$A[i]+B[m]<s$}
+        \State{$low \gets m+1$}
+      \Else
+        \State{$high \gets m-1$}
+      \EndIf
+    \EndWhile
+    \EndFor
+  \State \Return $(0,0)$
+  \EndFunction
+
+\end{algorithmic}
+\item
+A function $\textsc{F3}(A[\cdot],B[\cdot],n,s)$.
+The worst-case running time of \textsc{F3} should be $\Theta(n)$.
+Make \textsc{F3} as simple and neat as you can.
+\\
+\textsc{answer}
+\par
+\begin{algorithmic}
+  \Function{F3}{$A[\cdot],B[\cdot],n,s$}
+    \State $left \gets 1$
+    \State $right \gets n$
+    \While{$left \leq n \AND right \geq 1$}
+    \If{$A[left]+B[right]=s$}
+      \State \Return $(left, right)$
+    \ElsIf{$A[i]+B[m]<s$}
+      \State{$left \gets left+1$}
+    \Else
+      \State{$right \gets right-1$}
+    \EndIf
+    \EndWhile
+  \State \Return $(0,0)$
+  \EndFunction
+\end{algorithmic}
+\end{enumerate}
+\pagebreak
+
+\subsection*{Challenge 4 \hfill {\small (2 marks)}}
+
+A $d$-dimensional vector $\tuple{u_1,u_2,\ldots,u_d}$ \emph{screens}
+the vector $\tuple{v_1,v_2,\ldots,v_d}$ iff there is a permutation
+$\pi$ on $\{1,2,\ldots,d\}$ such that
+$u_1 > v_{\pi(1)}$,
+$u_2 > v_{\pi(2)}$,
+\ldots,
+$u_d > v_{\pi(d)}$.
+For example, $\tuple{7,9,4}$ screens $\tuple{7,6,3}$
+because one permutation of the latter is $\tuple{6,7,3}$.
+On the other hand, $\tuple{7,9,4,5}$ does not screen $\tuple{7,6,3,5}$.
+The last example also shows that we can have vectors
+$\mathbf{u}$ and $\mathbf{v}$, neither of which screens the other.
+
+Using pseudo-code,
+give an algorithm which determines, given two vectors $\mathbf{u}$
+and $\mathbf{v}$, whether $\mathbf{u}$ screens $\mathbf{v}$.
+It should return True iff $\mathbf{u}$ screens $\mathbf{v}$.
+If it helps, you an assume that vectors are arrays.
+Make the algorithm as efficient as you can, and state,
+as precisely as you can, its worst-case time complexity
+(and, if possible, average-case as well).
+\\
+\textsc{answer}
+\par
+\begin{algorithmic}
+  \Function{doesScreen}{$u[\cdot], v[\cdot], d$}
+    \State buildHeap($u[\cdot], d$)\Comment{build the max heap}
+    \State buildHeap($v[\cdot], d$)
+    \For{$i \gets 1,d$}
+      \If{$ \Call{eject}{u[\cdot], d-i+1} \leq \Call{eject}{v[\cdot], d-i+1}$}
+        \State \Return $\FALSE$
+      \EndIf
+    \EndFor
+    \State \Return $\TRUE$
+  \EndFunction
+
+  \Function{buildHeap}{$A[\cdot], n$}
+    \For{$i \gets floor(n/2)$ downto $1$}
+      \State $\Call{restoreHeap}{A[\cdot], i, n}$
+    \EndFor
+  \EndFunction
+
+  \Function{eject}{$A[\cdot], n$}
+    \State $item \gets A[1]$
+    \State $A[1] \gets A[n]$
+    \State $A[n] \gets item$
+    \State $\Call{restoreHeap}{A[\cdot], 1, n-1}$
+    \State \Return $item$
+  \EndFunction
+
+  \Function{restoreHeap}{$A[\cdot], k, n$}\Comment{restore a heap at parent node k}
+    \State $v \gets A[k]$
+    \State $heap \gets \FALSE$
+    \While{$\NOT heap \AND 2 * k \leq n$}
+      \State $j \gets 2 * k$
+      \If{$j < n \AND A[j] < A[j+1]$}
+        \State $j \gets j+1$
+      \EndIf
+      \If{$v \geq A[j]$}
+        \State $heap \gets \TRUE$
+      \Else
+        \State $A[k] \gets A[j]$
+        \State $k \gets j$
+      \EndIf
+    \EndWhile
+    \State $A[k] \gets v$
+  \EndFunction
+
+\end{algorithmic}
+
+To judge whether the vector $u$ screens the $v$,
+it could be the same problem of sorting two arrays(treat vector as array),
+and judge whether every element in one array are bigger than the corresponding
+element in the other array.
+
+I use heap sort to achieve this goal. The worst case and average complexity are
+both $\Theta(n \log n)$,
+since building heap is $\Theta(n)$ and ejecting is $\Theta(n \log n)$
+in the worst case.
+However, by using the heap, we do not need to sort the
+entire array, but restore it to a heap every time after ejecting, so the pratical
+performance could be better than other sorting algorithms.
+\pagebreak
+\subsection*{Challenge 5 \hfill {\small (2 marks)}}
+
+An array-based implementation of priority queues is not ideal if we
+often need to ``merge'' several priority queues into one, or if we
+are programming in a language that does not have arrays.
+Here we are interested in a data structure that is \emph{adaptive}
+and supports efficient merging, by which we mean taking two
+priority queues $P$ and $P'$ and forming a new priority queue with
+elements $P \cup P'$.
+As is often the case with adaptive data structures, some operations
+may be worst-case expensive, but when we average their cost across many
+applications, they are cheap.
+That will be the case for the operations we want to implement here:
+\textsc{Merge}, \textsc{Insert}, and \textsc{DeleteMax};
+all can be made to have $O(\log n)$ worst-case behaviour, amortised.
+
+Your task is to reconstruct pseudo-code for the three operations
+(including some helper functions).
+The appendix contains a scrambled solution,
+with lines of pseudo-code in random order, without any indentation.
+You are asked to reconstruct the original code, with proper indentation.
+
+The data structure we use is a kind of \emph{multiway tree},
+that is, a node can have any number of subtrees.
+Since it is a multiway tree and also a (max-)\emph{heap},
+we will call it a \emph{meap}.
+A meap $M$ can be empty, in which case we denote it \textbf{void}.
+If $M$ is non-empty then $M$ has a key, plus a list of non-empty
+sub-trees (sub-meaps).
+Note that the list of subtrees can be of any length;
+in particular it can be empty.
+
+A \emph{tree list} $L$ can be empty, in which case we denote it
+\textbf{null}.
+If $L$ is non-empty, then $L$ has a first tree, $L.\id{elt}$ and
+a tail, $L.\id{next}$, with the remaining trees.
+In our case, these trees are all meaps.
+
+A meap $M$ (other than \textbf{void}) has two attributes:
+\begin{itemize}
+\setlength{\itemsep}{-0.5ex}
+\item $M.\id{key}$ is the root node's key.
+\item $M.\id{subtrees}$ is a tree list---the list of $M$'s sub-meaps.
+\end{itemize}
+A meap must satisfy the \emph{heap condition}:
+The key of a child node is smaller than the key of its parent.
+That is, for every meap $M'$ in $M.\id{subtrees}$,
+we have $M'.\id{key} \leq M.\id{key}$.
+The heap condition must hold recursively, for all nodes.
+
+Below are two meaps, $M_1$ (on the left) and $M_2$ (on the right):
+\begin{center}
+\pstree[nodesep=2pt,levelsep=25pt,treesep=4mm]{\TR{92}}{
+  \pstree[treesep=2mm]{\TR{75}}{
+    \TR{16}
+    \TR{52}
+    \TR{27}
+  }
+  \TR{33}
+  \pstree{\TR{66}}{
+    \TR{44}
+  }
+  \pstree{\TR{49}}{
+    \TR{7}
+  }
+  \TR{10}
+}
+\qquad \qquad
+\pstree[nodesep=2pt,levelsep=25pt,treesep=4mm]{\TR{81}}{
+  \TR{30}
+  \pstree{\TR{64}}{
+    \pstree{\TR{57}}{
+      \TR{23}
+      \TR{44}
+    }
+  }
+}
+\end{center}
+
+\vspace{1ex}\noindent
+Here $M_1.\id{key} = 92$ and $M_1.\id{subtrees}$ is a list of five children.
+These children are meaps with roots 75, 33, 66, 49, and 10.
+
+To find and return the largest key in a meap is easy---it is just the root's
+key; we will not be worried about that operation in this question.
+
+To merge two meaps, we include the meap that has the smaller root key
+as the leftmost subtree of the other meap.
+Merging the two meaps above, we get $\textsc{Merge}(M_1,M_2)$,
+shown here:
+\begin{center}
+\pstree[nodesep=2pt,levelsep=25pt,treesep=5mm]{\TR{92}}{
+  \pstree{\TR{81}}{
+    \TR{30}
+    \pstree{\TR{64}}{
+      \pstree{\TR{57}}{
+        \TR{23}
+        \TR{44}
+      }
+    }
+  }
+  \pstree[treesep=2mm]{\TR{75}}{
+    \TR{16}
+    \TR{52}
+    \TR{27}
+  }
+  \TR{33}
+  \pstree{\TR{66}}{
+    \TR{44}
+  }
+  \pstree{\TR{49}}{
+    \TR{7}
+  }
+  \TR{10}
+}
+\end{center}
+
+\vspace{1ex}\noindent
+Once \textsc{Merge} has been implemented, \textsc{Insert} is easy.
+\textsc{DeleteMax} removes the largest element from a meap.
+It also makes use of \textsc{Merge} but is more complicated.
+After discarding the root it must merge the children, to return a
+single meap.
+We do the merging in two passes.
+First we merge the children in pairs from left to right
+(that is, the first child with the second, the third with the fourth,
+and so on).
+Then we merge the resulting meaps in a single sweep from right to left.
+
+Continuing our example, removal of the root (92) leaves us with
+six meaps to merge:
+\begin{center}
+  \pstree[nodesep=2pt,levelsep=25pt,treesep=5mm]{\TR{81}}{
+    \TR{30}
+    \pstree{\TR{64}}{
+      \pstree{\TR{57}}{
+        \TR{23}
+        \TR{44}
+      }
+    }
+  }
+  \quad
+  \pstree[nodesep=2pt,levelsep=25pt,treesep=5mm]{\TR{75}}{
+    \TR{16}
+    \TR{52}
+    \TR{27}
+  }
+  \quad
+  \pstree[nodesep=2pt,levelsep=25pt,treesep=5mm]{\TR{33}}{}
+  \qquad
+  \pstree[nodesep=2pt,levelsep=25pt,treesep=5mm]{\TR{66}}{
+    \TR{44}
+  }
+  \qquad
+  \pstree[nodesep=2pt,levelsep=25pt,treesep=5mm]{\TR{49}}{
+    \TR{7}
+  }
+  \qquad
+  \pstree[nodesep=2pt,levelsep=25pt,treesep=5mm]{\TR{10}}{}
+\end{center}
+
+\vspace{1ex}\noindent
+Merging pairwise, from left to right, we get:
+\begin{center}
+  \pstree[nodesep=2pt,levelsep=25pt,treesep=5mm]{\TR{81}}{
+    \pstree[treesep=2mm]{\TR{75}}{
+      \TR{16}
+      \TR{52}
+      \TR{27}
+    }
+    \TR{30}
+    \pstree{\TR{64}}{
+      \pstree{\TR{57}}{
+        \TR{23}
+        \TR{44}
+      }
+    }
+  }
+  \quad
+  \pstree[nodesep=2pt,levelsep=25pt,treesep=5mm]{\TR{66}}{
+    \TR{33}
+    \TR{44}
+  }
+  \qquad
+  \pstree[nodesep=2pt,levelsep=25pt,treesep=5mm]{\TR{49}}{
+    \TR{10}
+    \TR{7}
+  }
+\end{center}
+
+\pagebreak
+\noindent
+Now, merging the resulting meaps in a single pass from right to left,
+we get:
+\begin{center}
+  \pstree[nodesep=2pt,levelsep=25pt,treesep=5mm]{\TR{81}}{
+    \pstree[treesep=2mm]{\TR{66}}{
+      \pstree{\TR{49}}{
+        \TR{10}
+        \TR{7}
+      }
+      \TR{33}
+      \TR{44}
+    }
+    \pstree[treesep=2mm]{\TR{75}}{
+      \TR{16}
+      \TR{52}
+      \TR{27}
+    }
+    \TR{30}
+    \pstree{\TR{64}}{
+      \pstree{\TR{57}}{
+        \TR{23}
+        \TR{44}
+      }
+    }
+  }
+\end{center}
+
+\vspace{1ex}\noindent
+Now have fun re-assembling the code from the appendix.
+\hfill
+\\
+\textsc{answer}
+\par
+\begin{algorithmic}
+  \Function{AddToList}{$M, L$}
+    \State $R \gets \mathbf{new}\ \id{TreeList}$
+    \State $R.\id{elt} \gets M$
+    \State $R.\id{next} \gets L$
+    \State \Return $R$
+  \EndFunction
+
+  \Function{Merge}{$M_1,M_2$}
+    \If{$M_1 = \mathbf{void}$}
+      \State \Return $M_2$
+    \EndIf
+    \If{$M_2 = \mathbf{void}$}
+      \State \Return $M_1$
+    \EndIf
+    \State $M \gets \mathbf{new}\ \id{MultiwayTree}$
+    \If{$M_1.\id{key} > M_2.\id{key}$}
+      \State $M.\id{key} \gets M_1.\id{key}$
+      \State $M.\id{subtrees} \gets \textsc{AddToList}(M_2,M_1.\id{subtrees})$
+    \Else
+      \State $M.\id{key} \gets M_2.\id{key}$
+      \State $M.\id{subtrees} \gets \textsc{AddToList}(M_1,M_2.\id{subtrees})$
+    \EndIf
+    \State \Return $M$
+  \EndFunction
+
+  \Function{Insert}{$x, M$}
+    \State $M' \gets \mathbf{new}\ \id{MultiwayTree}$
+    \State $M'.\id{key} \gets x$
+    \State $M'.\id{subtrees} \gets \mathbf{null}$
+    \State \Return $\Call{Merge}{M',M}$
+  \EndFunction
+
+  \Function{MergePairs}{$L$}
+    \If{$L = \mathbf{null}$}
+      \State \Return $\mathbf{void}$
+    \EndIf
+    \State $M_1 \gets L.\id{elt}$
+    \State $L_1 \gets L.\id{next}$
+    \If{$L_1 = \mathbf{null}$}
+      \State \Return $M_1$
+    \EndIf
+    \State $M_2 \gets L_1.\id{elt}$
+    \State $L_2 \gets L_1.\id{next}$
+
+    \State \Return $\Call{Merge}{{\Call{Merge}{M_1, M_2}},\Call{MergePairs}{L_2}}$
+  \EndFunction
+
+  \Function{DeleteMax}{$M$}
+    \If{$M = \mathbf{void}$}
+      \State \textsc{Error}(``Cannot delete from empty tree'')
+    \EndIf
+    \State \Return $\Call{MergePairs}{M.\id{subtrees}}$
+  \EndFunction
+\end{algorithmic}
+
+\begin{flushright}
+Tiancong Li
+\\ 27 September 2017
+\end{flushright}
+\hfill
+
+\section*{Appendix: Scrambled solution for Question 5}
+\begin{algorithmic}
+\State \textbf{else}
+\State \textsc{Error}(``Cannot delete from empty tree'')
+\State \textbf{function} $\textsc{AddToList}(M,L)$ : $\id{TreeList}$
+\State \textbf{function} $\textsc{DeleteMax}(M)$ : $\id{MultiwayTree}$
+\State \textbf{function} $\textsc{Insert}(x,M)$ : $\id{MultiwayTree}$
+\State \textbf{function} $\textsc{Merge}(M_1,M_2)$ : $\id{MultiwayTree}$
+\State \textbf{function} $\textsc{MergePairs}(L)$ : $\id{MultiwayTree}$
+\State \textbf{if} $L = \mathbf{null}$ \textbf{then}
+\State \textbf{if} $L_1 = \mathbf{null}$ \textbf{then}
+\State \textbf{if} $M = \mathbf{void}$ \textbf{then}
+\State \textbf{if} $M_1 = \mathbf{void}$ \textbf{then}
+\State \textbf{if} $M_1.\id{key} > M_2.\id{key}$ \textbf{then}
+\State \textbf{if} $M_2 = \mathbf{void}$ \textbf{then}
+\State $L_1 \gets L.\id{next}$
+\State $L_2 \gets L_1.\id{next}$
+\State $M \gets \mathbf{new}\ \id{MultiwayTree}$
+\State $M.\id{key} \gets M_1.\id{key}$
+\State $M.\id{key} \gets M_2.\id{key}$
+\State $M.\id{subtrees} \gets \textsc{AddToList}(M_1,M_2.\id{subtrees})$
+\State $M.\id{subtrees} \gets \textsc{AddToList}(M_2,M_1.\id{subtrees})$
+\State $M' \gets \mathbf{new}\ \id{MultiwayTree}$
+\State $M'.\id{key} \gets x$
+\State $M'.\id{subtrees} \gets \mathbf{null}$
+\State $M_1 \gets L.\id{elt}$
+\State $M_2 \gets L_1.\id{elt}$
+\State $R \gets \mathbf{new}\ \id{TreeList}$
+\State $R.\id{elt} \gets M$
+\State $R.\id{next} \gets L$
+\State \textbf{return} $M$
+\State \textbf{return} $M_1$
+\State \textbf{return} $M_1$
+\State \textbf{return} $M_2$
+\State \textbf{return} $\textsc{Merge}(M',M)$
+\State \textbf{return}
+       $\textsc{Merge}(\textsc{Merge}(M_1,M_2),\textsc{MergePairs}(L_2))$
+\State \textbf{return} $\textsc{MergePairs}(M.\id{subtrees})$
+\State \textbf{return} $R$
+\State \textbf{return} $\mathbf{void}$
+\end{algorithmic}
+
+\end{document}
